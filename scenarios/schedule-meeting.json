@@ -1,0 +1,11 @@
+{
+  "id": "schedule-meeting",
+  "description": "Schedule Melanie with Robert Smith Thursday afternoon",
+  "agent": "admin",
+  "input": "Schedule Melanie with Robert Smith Thursday afternoon about the latest numbers",
+  "expect": {
+    "intent": "schedule_meeting",
+    "propose": true,
+    "disambiguate": false
+  }
+}

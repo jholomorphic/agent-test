@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "paths": {
+      "@agent-test/contracts": ["../../packages/contracts/src/index.ts"],
+      "@agent-test/permissions": ["../../packages/permissions/src/index.ts"],
+      "@agent-test/runtime": ["../../packages/runtime/src/index.ts"],
+      "@agent-test/agents": ["../../packages/agents/src/index.ts"],
+      "@agent-test/mocks": ["../../packages/mocks/src/index.ts"],
+      "@agent-test/private": ["../../packages/private/src/index.ts"],
+      "@agent-test/ui": ["../../packages/ui/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*", "vite.config.ts"]
+}

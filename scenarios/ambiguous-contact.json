@@ -1,0 +1,10 @@
+{
+  "id": "ambiguous-contact",
+  "description": "Ambiguous Robert must not execute",
+  "agent": "admin",
+  "input": "Schedule Robert Thursday afternoon",
+  "expect": {
+    "disambiguate": true,
+    "propose": false
+  }
+}
