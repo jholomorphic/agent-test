@@ -32,7 +32,7 @@ jobs:
           tauriScript: pnpm tauri
           args: --bundles app
           includeUpdaterJson: false
-                - name: Upload macOS app
+      - name: Upload macOS app
         uses: actions/upload-artifact@v4
         with:
           name: Agent-Test-macOS

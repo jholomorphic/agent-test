@@ -8,7 +8,7 @@ Windows and macOS installers are built by GitHub Actions on every push to this b
 2. Open the latest **Windows EXE (NSIS)** workflow run
 3. Download the artifact **`Agent-Test-Windows`**
 
-   Latest known-good run: https://github.com/jholomorphic/agent-test/actions/runs/29760694763
+   Latest known-good run: https://github.com/jholomorphic/agent-test/actions/runs/29762593669
 4. Unzip it — you should see something like:
    - `Agent Test_0.2.0_x64-setup.exe` (NSIS installer — preferred for quick testing)
    - `Agent Test_0.2.0_x64_en-US.msi` (MSI)
