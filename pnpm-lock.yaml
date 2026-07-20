@@ -35,6 +35,9 @@ importers:
       '@agent-test/permissions':
         specifier: workspace:*
         version: link:../../packages/permissions
+      '@agent-test/private':
+        specifier: workspace:*
+        version: link:../../packages/private
       '@agent-test/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
@@ -108,8 +111,17 @@ importers:
       '@agent-test/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@agent-test/private':
+        specifier: workspace:*
+        version: link:../private
 
   packages/permissions:
+    dependencies:
+      '@agent-test/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
+  packages/private:
     dependencies:
       '@agent-test/contracts':
         specifier: workspace:*
@@ -126,6 +138,9 @@ importers:
       '@agent-test/permissions':
         specifier: workspace:*
         version: link:../permissions
+      '@agent-test/private':
+        specifier: workspace:*
+        version: link:../private
 
   packages/ui:
     dependencies:

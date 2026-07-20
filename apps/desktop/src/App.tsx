@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { AgentId, AgentRunResult, ProposedAction } from "@agent-test/contracts";
 import { AgentRuntime } from "@agent-test/runtime";
 import { pickAgentForInput } from "@agent-test/agents";
+import { probeOllama } from "@agent-test/private";
 
 type NavId =
   | "home"
@@ -15,7 +16,8 @@ type NavId =
   | "graph"
   | "studio"
   | "playground"
-  | "evals";
+  | "evals"
+  | "settings";
 
 const NAV: { id: NavId; label: string }[] = [
   { id: "home", label: "Home" },
@@ -30,19 +32,31 @@ const NAV: { id: NavId; label: string }[] = [
   { id: "studio", label: "Automation Studio" },
   { id: "playground", label: "Playground" },
   { id: "evals", label: "Evaluations" },
+  { id: "settings", label: "Settings" },
 ];
 
 function loadPrefs() {
+  const defaults: {
+    shadow: boolean;
+    llmOnline: boolean;
+    connectedOnline: boolean;
+    llmProvider: "mock" | "ollama" | "auto";
+    ollamaUrl: string;
+    ollamaModel: string;
+  } = {
+    shadow: false,
+    llmOnline: true,
+    connectedOnline: true,
+    llmProvider: "mock",
+    ollamaUrl: "http://127.0.0.1:11434",
+    ollamaModel: "llama3.2",
+  };
   try {
     const raw = localStorage.getItem("agent-test-prefs");
-    if (!raw) return { shadow: false, llmOnline: true, connectedOnline: true };
-    return JSON.parse(raw) as {
-      shadow: boolean;
-      llmOnline: boolean;
-      connectedOnline: boolean;
-    };
+    if (!raw) return defaults;
+    return { ...defaults, ...JSON.parse(raw) };
   } catch {
-    return { shadow: false, llmOnline: true, connectedOnline: true };
+    return defaults;
   }
 }
 
@@ -52,6 +66,9 @@ function createRuntime(prefs = loadPrefs()) {
     shadow: prefs.shadow,
     llmOnline: prefs.llmOnline,
     connectedOnline: prefs.connectedOnline,
+    llmProvider: prefs.llmProvider,
+    ollamaUrl: prefs.ollamaUrl,
+    ollamaModel: prefs.ollamaModel,
   });
 }
 
@@ -71,6 +88,11 @@ export function App() {
   const [evalResults, setEvalResults] = useState<
     Array<{ name: string; pass: boolean; detail: string }>
   >([]);
+  const [docQuery, setDocQuery] = useState("Atlanta binder");
+  const [docHits, setDocHits] = useState<
+    Array<{ id: string; name: string; summary?: string }>
+  >([]);
+  const [ollamaStatus, setOllamaStatus] = useState<string>("Not probed");
 
   const applyPrefs = (next: typeof prefs) => {
     setPrefs(next);
@@ -475,6 +497,42 @@ export function App() {
         {nav === "documents" && (
           <>
             <h1>Documents</h1>
+            <p className="muted">
+              Local keyword index · {snap.indexer?.documents ?? 0} docs ·{" "}
+              {snap.indexer?.chunks ?? 0} chunks (Private Plane)
+            </p>
+            <div className="panel">
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  style={{ flex: 1 }}
+                  value={docQuery}
+                  onChange={(e) => setDocQuery(e.target.value)}
+                  placeholder="Search company knowledge…"
+                />
+                <button
+                  className="btn primary"
+                  type="button"
+                  onClick={async () => {
+                    const hits = await runtime.searchDocuments(docQuery);
+                    setDocHits(
+                      hits.map((d) => ({
+                        id: d.id,
+                        name: d.name,
+                        summary: d.summary,
+                      }))
+                    );
+                  }}
+                >
+                  Search
+                </button>
+              </div>
+              {docHits.map((h) => (
+                <div className="list-item" key={h.id}>
+                  <strong>{h.name}</strong>
+                  <div className="muted">{h.summary}</div>
+                </div>
+              ))}
+            </div>
             <div
               className="dropzone"
               onDragOver={(e) => {
@@ -503,9 +561,12 @@ export function App() {
                 onClick={async () => {
                   await runtime.importPaths([
                     {
-                      name: "usb-financials.xlsx",
-                      path: "fixtures/usb/financials.xlsx",
-                      content: "Service margins Q2 financial spreadsheet",
+                      name: "usb-financials.csv",
+                      path: "fixtures/usb/financials.csv",
+                      content: `Service,Revenue,Cost,Margin,PriorMargin,Client,Hours
+Service A,100000,81000,0.19,0.31,Atlanta Ventures,520
+Service B,80000,62400,0.22,0.22,Venture Atlanta,120
+`,
                     },
                     {
                       name: "clients.csv",
@@ -532,12 +593,18 @@ export function App() {
         {nav === "finance" && (
           <>
             <h1>Finance</h1>
-            <p className="muted">Private Plane only — Connected Plane gets metadata alerts.</p>
+            <p className="muted">
+              Real CSV margin analysis on the Private Plane — Connected Plane gets metadata
+              alerts only.
+            </p>
             <button
               className="btn primary"
               type="button"
               onClick={async () => {
-                const result = await runtime.run("finance", "Analyze Q2 financials and flag margin changes");
+                const result = await runtime.run(
+                  "finance",
+                  "Analyze Q2 financials and flag margin changes"
+                );
                 setLastRun(result);
                 refresh();
               }}
@@ -549,10 +616,14 @@ export function App() {
                 <span className={`tag ${f.severity === "critical" ? "danger" : "warn"}`}>
                   {f.severity}
                 </span>
+                {f.changePct != null && (
+                  <span className="tag">{f.changePct > 0 ? "+" : ""}{f.changePct} pts</span>
+                )}
                 <strong>{f.summary}</strong>
                 <div className="muted">
                   report {f.reportId}
                   {f.reviewRequired ? " · review required" : ""}
+                  {f.detailsPrivate ? " · details private" : ""}
                 </div>
               </div>
             ))}
@@ -684,6 +755,100 @@ export function App() {
                   </strong>
                 </p>
               )}
+            </div>
+          </>
+        )}
+
+        {nav === "settings" && (
+          <>
+            <h1>Settings</h1>
+            <div className="panel">
+              <h2>LLM provider</h2>
+              <p className="muted">
+                Confidential/restricted traffic always stays on the local provider (Mock or Ollama).
+              </p>
+              <label>
+                Provider{" "}
+                <select
+                  value={prefs.llmProvider}
+                  onChange={(e) =>
+                    applyPrefs({
+                      ...prefs,
+                      llmProvider: e.target.value as "mock" | "ollama" | "auto",
+                    })
+                  }
+                >
+                  <option value="mock">MockLLM (deterministic)</option>
+                  <option value="ollama">Ollama (fallback to mock)</option>
+                  <option value="auto">Auto (Ollama with mock fallback)</option>
+                </select>
+              </label>
+              <div style={{ marginTop: 12 }}>
+                <label>
+                  Ollama URL{" "}
+                  <input
+                    style={{ width: "100%" }}
+                    value={prefs.ollamaUrl}
+                    onChange={(e) => applyPrefs({ ...prefs, ollamaUrl: e.target.value })}
+                  />
+                </label>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label>
+                  Model{" "}
+                  <input
+                    value={prefs.ollamaModel}
+                    onChange={(e) => applyPrefs({ ...prefs, ollamaModel: e.target.value })}
+                  />
+                </label>
+              </div>
+              <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "center" }}>
+                <button
+                  className="btn"
+                  type="button"
+                  onClick={async () => {
+                    const result = await probeOllama(prefs.ollamaUrl);
+                    setOllamaStatus(
+                      result.online
+                        ? `Online · models: ${result.models.join(", ") || "(none)"}`
+                        : `Offline · ${result.error ?? "unreachable"}`
+                    );
+                  }}
+                >
+                  Probe Ollama
+                </button>
+                <span className="muted">{ollamaStatus}</span>
+              </div>
+            </div>
+            <div className="panel">
+              <h2>Connected Plane</h2>
+              <p className="muted">
+                Railway gateway coordinates tools only. Default local stub: http://localhost:8080
+              </p>
+              <button
+                className="btn"
+                type="button"
+                onClick={async () => {
+                  try {
+                    const res = await fetch("http://localhost:8080/health");
+                    const body = await res.json();
+                    setOllamaStatus(`Gateway: ${JSON.stringify(body)}`);
+                  } catch {
+                    setOllamaStatus("Gateway offline (start with pnpm dev:web)");
+                  }
+                }}
+              >
+                Probe gateway
+              </button>
+            </div>
+            <div className="panel">
+              <h2>Next steps roadmap</h2>
+              <ol>
+                <li>Phase 0.2 — local CSV/indexer/Ollama adapter (this build)</li>
+                <li>Phase 0.3 — real test Gmail/Calendar via Railway tools</li>
+                <li>Phase 0.4 — macOS + Ollama on Mac 1</li>
+                <li>Phase 0.5 — company pilot with shadow mode on live mail</li>
+              </ol>
             </div>
           </>
         )}

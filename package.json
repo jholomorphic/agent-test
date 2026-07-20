@@ -1,7 +1,7 @@
 {
   "name": "agent-test",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Private company agent operations system — simulation lab",
   "packageManager": "pnpm@9.15.0",
   "scripts": {

@@ -5,7 +5,7 @@
 **Target session:** Wednesday, July 22, 2026 · 11:30 a.m.  
 **Principle:** One shared infrastructure, multiple isolated agent identities. Cloud coordinates actions; local infrastructure understands confidential data.
 
-**Status (2026-07-20):** Phase **0.1 Simulation Lab is implemented**. Windows **NSIS `.exe` / MSI** and macOS app bundles are produced by GitHub Actions (`Windows EXE (NSIS)` workflow → artifact `Agent-Test-Windows`). See `docs/DOWNLOAD.md`.
+**Status (2026-07-20):** Phase **0.1** (sim lab + Windows `.exe`) and Phase **0.2** (local CSV finance, document indexer, Ollama adapter, richer Railway gateway) are implemented. See `docs/NEXT_STEPS.md` and `docs/DOWNLOAD.md`.
 
 ---
 

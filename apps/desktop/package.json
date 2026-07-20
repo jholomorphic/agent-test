@@ -1,6 +1,6 @@
 {
   "name": "@agent-test/desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +17,7 @@
     "@agent-test/contracts": "workspace:*",
     "@agent-test/mocks": "workspace:*",
     "@agent-test/permissions": "workspace:*",
+    "@agent-test/private": "workspace:*",
     "@agent-test/runtime": "workspace:*",
     "@agent-test/ui": "workspace:*",
     "@tauri-apps/api": "2",

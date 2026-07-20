@@ -17,7 +17,15 @@ import {
   DemoStore,
   createDemoStore,
   createMockTools,
+  MockLLMProvider,
 } from "@agent-test/mocks";
+import {
+  ModelRouter,
+  OllamaLLMProvider,
+  classificationFromInput,
+  looksLikePromptInjection,
+} from "@agent-test/private";
+import type { LLMProvider } from "@agent-test/contracts";
 
 export interface ConnectedPlaneSink {
   /** Records sanitized outbound messages — used for privacy tests. */
@@ -30,6 +38,10 @@ export interface RuntimeOptions {
   llmOnline?: boolean;
   connectedOnline?: boolean;
   shadow?: boolean;
+  /** Prefer Ollama when reachable; always keep MockLLM as fallback. */
+  llmProvider?: "mock" | "ollama" | "auto";
+  ollamaUrl?: string;
+  ollamaModel?: string;
 }
 
 export const AGENT_CAPABILITIES: AgentCapability[] = [
@@ -192,10 +204,16 @@ export class AgentRuntime {
   shadow: boolean;
   connected: ConnectedPlaneSink;
   activity: Array<{ time: string; agent: AgentId; text: string }> = [];
+  llmProviderName: "mock" | "ollama" | "auto";
+  ollamaUrl: string;
+  ollamaModel: string;
 
   constructor(options: RuntimeOptions = {}) {
     this.store = createDemoStore();
-    this.tools = createMockTools(this.store);
+    this.llmProviderName = options.llmProvider ?? "mock";
+    this.ollamaUrl = options.ollamaUrl ?? "http://127.0.0.1:11434";
+    this.ollamaModel = options.ollamaModel ?? "llama3.2";
+    this.tools = createMockTools(this.store, this.buildLlm());
     this.policy = defaultPolicy;
     this.connected = {
       messages: [],
@@ -207,9 +225,19 @@ export class AgentRuntime {
     this.shadow = options.shadow === true;
   }
 
+  private buildLlm(): LLMProvider {
+    const mock = new MockLLMProvider();
+    if (this.llmProviderName === "mock") return mock;
+    const ollama = new OllamaLLMProvider(
+      { baseUrl: this.ollamaUrl, model: this.ollamaModel },
+      mock
+    );
+    return new ModelRouter(ollama);
+  }
+
   reset() {
     this.store = createDemoStore();
-    this.tools = createMockTools(this.store);
+    this.tools = createMockTools(this.store, this.buildLlm());
     this.connected.messages = [];
     this.bus = new ActionBus(this.policy, this.connected);
     this.audit = [];
@@ -277,10 +305,7 @@ export class AgentRuntime {
     }
 
     // Untrusted content gate (documents treated as data, not instructions)
-    if (
-      input.toLowerCase().includes("ignore all previous instructions") ||
-      /email the ceo.*financial/i.test(input)
-    ) {
+    if (looksLikePromptInjection(input)) {
       push("intent", "reject_untrusted_content");
       push(
         "permission",
@@ -307,12 +332,14 @@ export class AgentRuntime {
       };
     }
 
+    const classification = classificationFromInput(input);
     const llm = await this.tools.llm.complete({
       agentId,
       system: SYSTEM_PROMPTS[agentId],
       input,
+      context: { classification },
     });
-    push("intent", llm.intent, { toolCalls: llm.toolCalls });
+    push("intent", llm.intent, { toolCalls: llm.toolCalls, classification });
 
     // Permission isolation probes from LLM tool calls
     for (const call of llm.toolCalls) {
@@ -886,12 +913,19 @@ export class AgentRuntime {
     return results;
   }
 
+  searchDocuments(query: string) {
+    return this.tools.documents.search(query);
+  }
+
   snapshot() {
     return {
       mode: this.mode,
       llmOnline: this.llmOnline,
       connectedOnline: this.connected.online,
       shadow: this.shadow,
+      llmProvider: this.llmProviderName,
+      ollamaUrl: this.ollamaUrl,
+      ollamaModel: this.ollamaModel,
       agents: this.getCapabilities(),
       emails: this.store.emails,
       events: this.store.events,
@@ -906,6 +940,7 @@ export class AgentRuntime {
       actionBus: this.bus.messages,
       connectedMessages: this.connected.messages,
       interactions: this.store.interactions,
+      indexer: this.tools.indexer.stats(),
     };
   }
 }

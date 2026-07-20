@@ -1,5 +1,5 @@
 {
-  "name": "@agent-test/mocks",
+  "name": "@agent-test/private",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,7 +8,6 @@
   "exports": { ".": "./src/index.ts" },
   "scripts": { "build": "tsc -p tsconfig.json" },
   "dependencies": {
-    "@agent-test/contracts": "workspace:*",
-    "@agent-test/private": "workspace:*"
+    "@agent-test/contracts": "workspace:*"
   }
 }

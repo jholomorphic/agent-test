@@ -14,6 +14,7 @@ export default defineConfig({
       "@agent-test/runtime": path.resolve(__dirname, "../../packages/runtime/src/index.ts"),
       "@agent-test/agents": path.resolve(__dirname, "../../packages/agents/src/index.ts"),
       "@agent-test/mocks": path.resolve(__dirname, "../../packages/mocks/src/index.ts"),
+      "@agent-test/private": path.resolve(__dirname, "../../packages/private/src/index.ts"),
       "@agent-test/ui": path.resolve(__dirname, "../../packages/ui/src/index.ts"),
     },
   },
