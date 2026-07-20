@@ -1,7 +1,10 @@
 {
-  "productName": "Agent Test",
-  "identifier": "com.agenttest.app",
   "bundle": {
-    "targets": ["nsis", "msi"]
+    "targets": ["nsis", "msi"],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
   }
 }

@@ -1,0 +1,76 @@
+name: Release installers
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri -> target
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: apps/desktop
+          tauriScript: pnpm tauri
+          args: -- --bundles nsis,msi
+          tagName: ${{ github.ref_name }}
+          releaseName: "Agent Test ${{ github.ref_name }}"
+          releaseBody: |
+            Windows installers for Agent Test.
+
+            - Prefer `*-setup.exe` (NSIS) for quick install
+            - App starts in Simulation Mode — no cloud accounts required
+
+            See docs/DOWNLOAD.md for the demo walkthrough.
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: false
+
+  macos:
+    needs: windows
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri -> target
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: apps/desktop
+          tauriScript: pnpm tauri
+          args: -- --bundles app,dmg
+          tagName: ${{ github.ref_name }}
+          releaseName: "Agent Test ${{ github.ref_name }}"
+          releaseDraft: true
+          includeUpdaterJson: false

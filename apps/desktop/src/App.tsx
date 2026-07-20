@@ -32,12 +32,32 @@ const NAV: { id: NavId; label: string }[] = [
   { id: "evals", label: "Evaluations" },
 ];
 
-function createRuntime() {
-  return new AgentRuntime({ mode: "simulation" });
+function loadPrefs() {
+  try {
+    const raw = localStorage.getItem("agent-test-prefs");
+    if (!raw) return { shadow: false, llmOnline: true, connectedOnline: true };
+    return JSON.parse(raw) as {
+      shadow: boolean;
+      llmOnline: boolean;
+      connectedOnline: boolean;
+    };
+  } catch {
+    return { shadow: false, llmOnline: true, connectedOnline: true };
+  }
+}
+
+function createRuntime(prefs = loadPrefs()) {
+  return new AgentRuntime({
+    mode: "simulation",
+    shadow: prefs.shadow,
+    llmOnline: prefs.llmOnline,
+    connectedOnline: prefs.connectedOnline,
+  });
 }
 
 export function App() {
-  const [runtime] = useState(createRuntime);
+  const [prefs, setPrefs] = useState(loadPrefs);
+  const [runtime, setRuntime] = useState(() => createRuntime(prefs));
   const [version, setVersion] = useState(0);
   const refresh = () => setVersion((n) => n + 1);
 
@@ -52,6 +72,15 @@ export function App() {
     Array<{ name: string; pass: boolean; detail: string }>
   >([]);
 
+  const applyPrefs = (next: typeof prefs) => {
+    setPrefs(next);
+    localStorage.setItem("agent-test-prefs", JSON.stringify(next));
+    const rt = createRuntime(next);
+    setRuntime(rt);
+    setLastRun(null);
+    setEvalResults([]);
+    setVersion((n) => n + 1);
+  };
   const snap = useMemo(() => runtime.snapshot(), [runtime, version]);
 
   const runCommand = useCallback(async () => {
@@ -85,6 +114,8 @@ export function App() {
 
   const approve = async (p: ProposedAction) => {
     await runtime.approve(p.id);
+    const { cacheActivity } = await import("./lib/persist");
+    cacheActivity(runtime);
     refresh();
   };
 
@@ -122,7 +153,50 @@ export function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">Agent Test</div>
-        <div className="badge">Simulation Mode · System Healthy</div>
+        <div className="topbar-controls">
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={prefs.shadow}
+              onChange={(e) => applyPrefs({ ...prefs, shadow: e.target.checked })}
+            />
+            Shadow
+          </label>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={prefs.llmOnline}
+              onChange={(e) => applyPrefs({ ...prefs, llmOnline: e.target.checked })}
+            />
+            LLM
+          </label>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={prefs.connectedOnline}
+              onChange={(e) =>
+                applyPrefs({ ...prefs, connectedOnline: e.target.checked })
+              }
+            />
+            Connected
+          </label>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              const rt = createRuntime(prefs);
+              setRuntime(rt);
+              setLastRun(null);
+              setEvalResults([]);
+              refresh();
+            }}
+          >
+            Reset demo
+          </button>
+          <div className="badge">
+            {prefs.shadow ? "Shadow Mode" : "Simulation Mode"} · System Healthy
+          </div>
+        </div>
       </header>
 
       <aside className="nav">

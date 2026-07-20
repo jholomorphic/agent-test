@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "lint": "tsc -p tsconfig.json --noEmit",
     "eval": "tsx scripts/run-evals.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "tauri:build": "pnpm --filter @agent-test/desktop tauri:build",
+    "desktop:build": "pnpm --filter @agent-test/desktop build"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

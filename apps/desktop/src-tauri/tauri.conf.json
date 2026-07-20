@@ -4,18 +4,22 @@
   "version": "0.1.0",
   "identifier": "com.agenttest.app",
   "build": {
-    "beforeDevCommand": "pnpm --filter @agent-test/desktop dev",
+    "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:5173",
-    "beforeBuildCommand": "pnpm --filter @agent-test/desktop build",
+    "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Agent Test",
         "width": 1280,
         "height": 800,
-        "resizable": true
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true,
+        "center": true
       }
     ],
     "security": {
@@ -24,12 +28,21 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
-    "icon": [],
+    "targets": ["nsis", "msi"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "windows": {
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
       }
-    }
+    },
+    "shortDescription": "Private company agent operations simulator",
+    "longDescription": "Agent Test is a simulation lab for a private company agent OS — local intelligence, connected tools, human approval."
   }
 }
