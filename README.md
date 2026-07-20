@@ -14,7 +14,8 @@ pnpm dev           # ops console at http://localhost:5173
 pnpm dev:web       # Connected Plane gateway at http://localhost:8080
 ```
 
-**Windows `.exe`:** see **[docs/DOWNLOAD.md](./docs/DOWNLOAD.md)** — GitHub Actions builds `Agent Test_0.1.0_x64-setup.exe` (NSIS) on every push.
+**Windows `.exe`:** see **[docs/DOWNLOAD.md](./docs/DOWNLOAD.md)** — GitHub Actions builds NSIS/MSI on every push.  
+**Roadmap:** **[docs/NEXT_STEPS.md](./docs/NEXT_STEPS.md)**
 
 ## Layout
 

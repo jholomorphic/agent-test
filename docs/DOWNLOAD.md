@@ -10,8 +10,8 @@ Windows and macOS installers are built by GitHub Actions on every push to this b
 
    Latest known-good run: https://github.com/jholomorphic/agent-test/actions/runs/29760694763
 4. Unzip it — you should see something like:
-   - `Agent Test_0.1.0_x64-setup.exe` (NSIS installer — preferred for quick testing)
-   - `Agent Test_0.1.0_x64_en-US.msi` (MSI)
+   - `Agent Test_0.2.0_x64-setup.exe` (NSIS installer — preferred for quick testing)
+   - `Agent Test_0.2.0_x64_en-US.msi` (MSI)
 
 5. Run the **setup.exe**, install for the current user, launch **Agent Test**
 
