@@ -30,7 +30,7 @@ jobs:
         with:
           projectPath: apps/desktop
           tauriScript: pnpm tauri
-          args: -- --bundles nsis,msi
+          args: --bundles nsis,msi
           tagName: ${{ github.ref_name }}
           releaseName: "Agent Test ${{ github.ref_name }}"
           releaseBody: |
@@ -65,7 +65,7 @@ jobs:
         with:
           projectPath: apps/desktop
           tauriScript: pnpm tauri
-          args: -- --bundles app,dmg
+          args: --bundles app,dmg
           tagName: ${{ github.ref_name }}
           releaseName: "Agent Test ${{ github.ref_name }}"
           releaseDraft: true
