@@ -1,0 +1,20 @@
+{
+  "name": "@agent-test/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@agent-test/contracts": "workspace:*",
+    "@agent-test/permissions": "workspace:*",
+    "@agent-test/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

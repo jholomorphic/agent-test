@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@agent-test/contracts": ["./packages/contracts/src/index.ts"],
+      "@agent-test/permissions": ["./packages/permissions/src/index.ts"],
+      "@agent-test/runtime": ["./packages/runtime/src/index.ts"],
+      "@agent-test/agents": ["./packages/agents/src/index.ts"],
+      "@agent-test/mocks": ["./packages/mocks/src/index.ts"],
+      "@agent-test/ui": ["./packages/ui/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "apps/*/src/**/*",
+    "tests/**/*",
+    "scripts/**/*",
+    "scenarios/**/*"
+  ],
+  "exclude": ["node_modules", "dist", "**/src-tauri"]
+}

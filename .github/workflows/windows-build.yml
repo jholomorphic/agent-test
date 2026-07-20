@@ -1,0 +1,29 @@
+name: Windows build
+
+on:
+  push:
+    branches: ["main", "cursor/**"]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm --filter @agent-test/desktop build
+      - name: Upload web dist (Tauri frontend artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-test-web-dist
+          path: apps/desktop/dist
+      # Full Tauri NSIS build requires icons + tauri-cli; frontend artifact proves CI path.
+      - name: Note Tauri native build
+        run: echo "Native NSIS/MSI enabled once icons are added via tauri icon. Frontend bundle is the Phase 0.1 deliverable."

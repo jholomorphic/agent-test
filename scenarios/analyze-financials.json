@@ -1,0 +1,11 @@
+{
+  "id": "analyze-financials",
+  "description": "Finance agent analyzes Q2 and emits sanitized review_required",
+  "agent": "finance",
+  "input": "Analyze Q2 financials and flag margin changes",
+  "expect": {
+    "intent": "analyze_financials",
+    "connectedEvent": "FinancialReviewRequired",
+    "noLeakKeys": ["revenue", "payroll"]
+  }
+}

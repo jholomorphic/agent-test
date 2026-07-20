@@ -1,0 +1,25 @@
+name: macOS build
+
+on:
+  push:
+    branches: ["main", "cursor/**"]
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm --filter @agent-test/desktop build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-test-macos-web-dist
+          path: apps/desktop/dist

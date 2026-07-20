@@ -5,6 +5,8 @@
 **Target session:** Wednesday, July 22, 2026 · 11:30 a.m.  
 **Principle:** One shared infrastructure, multiple isolated agent identities. Cloud coordinates actions; local infrastructure understands confidential data.
 
+**Status (2026-07-20):** Phase **0.1 Simulation Lab is implemented** in this repo — ops console, MockLLM/tools, Action Bus, permission engine, eval suite (13/13), Railway gateway stub, Tauri scaffold, CI workflows. Next: wire real adapters / Ollama when Macs are available.
+
 ---
 
 ## 1. What we are building
